@@ -4,9 +4,9 @@ struct Question
 {
   let question:String ;
   let answer:String;
-  let options:Set<String>;
+  let options:Array<String>;
 
-  init(question:String, answer:String, options:Set<String>) 
+  init(question:String, answer:String, options:Array<String>) 
   {
     self.question = question;
     self.answer = answer;
@@ -28,26 +28,48 @@ class QuestionBank
     initializeHardQuestions();
   }
 
-  func getEasyQuestions() -> Array<Question>
+  func getQuestions(difficulty:String) -> Array<Question>
   {
-    return easyQuestions;
-  }
+    var temp:Array<Question>=[]
+    var selectedIndexes:Array<Int>=[]
+    for _ in 1...3
+    {
 
-  func getMediumQuestions() -> Array<Question>
-  {
-    return mediumQuestions;
-  }
-
-  func getHardQuestions() -> Array<Question>
-  {
-    return hardQuestions;
+      var randomInt:Int = 0;
+      while(true)
+      {
+        randomInt = Int.random(in: 0..<5)
+        if(selectedIndexes.contains(randomInt))
+        {
+          continue;
+        }
+        else{
+          selectedIndexes.append(randomInt)
+          break;
+        }
+      }
+      
+      if(difficulty == "easy")
+      {
+        temp.append(easyQuestions[randomInt])
+      }
+      else if(difficulty == "medium")
+      {
+        temp.append(mediumQuestions[randomInt])
+      }
+      else{
+        temp.append(hardQuestions[randomInt])
+      }
+        
+    }
+    return temp;
   }
 
   func initializeEasyQuestions()
   {
     var question = "How many days do we have in a week?";
     var answer = "7";
-    var options:Set<String> = ["5","7","8","3"];
+    var options:Array<String> = ["5","7","8","3"];
     let q1 = Question(question:question,answer:answer,options:options);
     easyQuestions.append(q1);
 
@@ -82,7 +104,7 @@ class QuestionBank
   {
     var question = "How many days do we have in a week?";
     var answer = "7";
-    var options:Set<String> = ["5","7","8","3"];
+    var options:Array<String> = ["5","7","8","3"];
     let q1 = Question(question:question,answer:answer,options:options);
     mediumQuestions.append(q1);
 
@@ -116,7 +138,7 @@ class QuestionBank
   {
     var question = "How many days do we have in a week?";
     var answer = "7";
-    var options:Set<String> = ["5","7","8","3"];
+    var options:Array<String> = ["5","7","8","3"];
     let q1 = Question(question:question,answer:answer,options:options);
     hardQuestions.append(q1);
 
@@ -149,17 +171,126 @@ class QuestionBank
 
 };
 
+struct Prize{
+  var amountEarned:Int;
+  var incorrectWinningAmount:Int;
+  init()
+  {
+    self.amountEarned = 0;
+    self.incorrectWinningAmount = 0;
+  }
+
+  init(a:Int,b:Int)
+  {
+    self.amountEarned = a;
+    self.incorrectWinningAmount = b;
+  }
+
+}
+
+
+class User
+{
+  var name:String;
+  var prize:Prize;
+  
+  init(name:String)
+  {
+    self.name = name;
+    self.prize = Prize()
+  }
+}
+
+
+class GamePrize
+{
+  let customKeys:Array<Int>;
+  let customValues:Array<Prize>;
+  let gamePrizes : [Int:Prize]
+
+  init()
+  {
+    self.customKeys = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    self.customValues = 
+    [ Prize(a:0,b:0),
+      Prize(a:0,b:0),
+      Prize(a:10000,b:0),
+      Prize(a:0,b:10000),
+      Prize(a:0,b:10000),
+      Prize(a:100000,b:10000),
+      Prize(a:250000,b:100000),
+      Prize(a:500000,b:100000),
+      Prize(a:1000000,b:100000)
+    ]
+
+    self.gamePrizes = Dictionary(uniqueKeysWithValues: zip(self.customKeys,self.customValues))
+  }
+
+}
+
+
 class Game
 {
+  var questions:Array<Question>;
+  var is50_50Used:Bool = false;
+  var isAudienceUsed:Bool = false;
+  var user:User;
+
+  init()
+  {
+    questions=[]
+    var temp:Array<Question> = [];
+    let qBank = QuestionBank();
+    var q = qBank.getQuestions(difficulty:"easy");
+    temp.append(contentsOf:q);
+    q = qBank.getQuestions(difficulty:"medium");
+    temp.append(contentsOf:q);
+    q = qBank.getQuestions(difficulty:"hard");
+    temp.append(contentsOf:q);
+    questions.append(contentsOf:temp)
+
+    self.user = User(name:"User");
+
+  }
+
+  func getUserDetails()
+  {
+    print("Enter your name : ")
+    let optionalName = readLine();
+    var name = "User"
+    if let name_ = optionalName {
+      name = "\(name_)"
+    }
+    self.user = User(name:name);
+    print("Hello, \(user.name)")
+  }
+
+  func printGreeting()
+  {
+    print("Welcome to Who Wants To Be A Millionaire?");
+  }
+
+
+
   func start()
   {
-      let qBank = QuestionBank()
-      let easyQuestions = qBank.getEasyQuestions()
+    printGreeting();
+    getUserDetails()
 
-      for question in easyQuestions
-      {
-        print(question.question)
-      }
+    var qno = 1;
+    while(qno <= 9)
+    {
+      let currentQuestion = questions[qno-1];
+      print("Question \(qno) :")
+      print(currentQuestion.question);
+      print("\n");
+      print("Options 1 : \(currentQuestion.options[0]) \t Options 2 : \(currentQuestion.options[1]) \n");
+      print("Options 3 : \(currentQuestion.options[2]) \t Options 4 : \(currentQuestion.options[3]) \n");
+
+      
+
+      qno += 1;
+    }
   }
 
 };
