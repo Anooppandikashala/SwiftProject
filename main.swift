@@ -6,8 +6,7 @@ struct Question
   let answer:String;
   let options:Array<String>;
 
-  init(question:String, answer:String, options:Array<String>) 
-  {
+  init(question:String, answer:String, options:Array<String>){
     self.question = question;
     self.answer = answer;
     self.options = options;
@@ -21,8 +20,7 @@ class QuestionBank
   var mediumQuestions:Array<Question>=[];
   var hardQuestions:Array<Question>=[];
 
-  init()
-  {
+  init(){
     initializeEasyQuestions();
     initializeMediumQuestions();
     initializeHardQuestions();
@@ -75,7 +73,7 @@ class QuestionBank
 
     question = "How many days are there in a year?";
     answer = "365";
-    options = ["366","360","368","300"];
+    options = ["366","360","368","365"];
     let q2 = Question(question:question,answer:answer,options:options);
     easyQuestions.append(q2);
 
@@ -110,7 +108,7 @@ class QuestionBank
 
     question = "How many days are there in a year?";
     answer = "365";
-    options = ["366","360","368","300"];
+    options = ["366","360","368","365"];
     let q2 = Question(question:question,answer:answer,options:options);
     mediumQuestions.append(q2);
 
@@ -144,7 +142,7 @@ class QuestionBank
 
     question = "How many days are there in a year?";
     answer = "365";
-    options = ["366","360","368","300"];
+    options = ["366","360","368","365"];
     let q2 = Question(question:question,answer:answer,options:options);
     hardQuestions.append(q2);
 
@@ -168,22 +166,27 @@ class QuestionBank
 
   }
 
-
 };
 
 struct Prize{
   var amountEarned:Int;
   var incorrectWinningAmount:Int;
-  init()
-  {
+  init(){
     self.amountEarned = 0;
     self.incorrectWinningAmount = 0;
   }
 
-  init(a:Int,b:Int)
-  {
+  init(a:Int,b:Int){
     self.amountEarned = a;
     self.incorrectWinningAmount = b;
+  }
+
+  func getEarnedAmount() -> Int{
+    return self.amountEarned;
+  }
+
+  func getIncorrectWinningAmount() -> Int{
+    return self.incorrectWinningAmount;
   }
 
 }
@@ -194,8 +197,7 @@ class User
   var name:String;
   var prize:Prize;
   
-  init(name:String)
-  {
+  init(name:String){
     self.name = name;
     self.prize = Prize()
   }
@@ -204,26 +206,31 @@ class User
 
 class GamePrize
 {
-  let customKeys:Array<Int>;
-  let customValues:Array<Prize>;
   let gamePrizes : [Int:Prize]
 
-  init()
-  {
-    self.customKeys = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    self.customValues = 
-    [ Prize(a:0,b:0),
-      Prize(a:0,b:0),
+  init(){
+    let customKeys:Array<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    let customValues:Array<Prize> = 
+    [ Prize(a:1000,b:0),
+      Prize(a:5000,b:0),
       Prize(a:10000,b:0),
-      Prize(a:0,b:10000),
-      Prize(a:0,b:10000),
+      Prize(a:25000,b:10000),
+      Prize(a:50000,b:10000),
       Prize(a:100000,b:10000),
       Prize(a:250000,b:100000),
       Prize(a:500000,b:100000),
       Prize(a:1000000,b:100000)
     ]
 
-    self.gamePrizes = Dictionary(uniqueKeysWithValues: zip(self.customKeys,self.customValues))
+    self.gamePrizes = Dictionary(uniqueKeysWithValues: zip(customKeys,customValues))
+  }
+
+  func getPrize(qno:Int) -> Prize{
+    if let prize:Prize = self.gamePrizes[qno]
+    {
+      return prize;
+    }
+    return Prize(a:0,b:0);
   }
 
 }
@@ -235,10 +242,32 @@ class Game
   var is50_50Used:Bool = false;
   var isAudienceUsed:Bool = false;
   var user:User;
+  let gamePrize:GamePrize;
 
-  init()
+  func use50_50(question:Question)
   {
+    var incorrectOptions:Array<Int> = [];
+    while(true)
+    {
+      let r = Int.random(in: 0..<4);
+      if(question.options[r] == question.answer)
+      {
+        continue;
+      }
+      incorrectOptions.append(r);
+      if(incorrectOptions.count == 2)
+      {
+        break;
+      }
+    }
+
+    //TODO Print options
+
+  }
+
+  init(){
     questions=[]
+    self.gamePrize = GamePrize();
     var temp:Array<Question> = [];
     let qBank = QuestionBank();
     var q = qBank.getQuestions(difficulty:"easy");
@@ -270,7 +299,29 @@ class Game
     print("Welcome to Who Wants To Be A Millionaire?");
   }
 
+  func getOptionForTheQuestion(question:Question,qno:Int) -> Int
+  {
+    while(true)
+    {
+      print("Question \(qno) :")
+      print(question.question);
+      print("\n");
+      print("Options 1 : \(question.options[0]) \t Options 2 : \(question.options[1]) \n");
+      print("Options 3 : \(question.options[2]) \t Options 4 : \(question.options[3]) \n");
 
+      let option = readLine()!;
+
+      if let optionInt = Int(option)
+      {
+        if(optionInt <= 4 && optionInt >= 1)
+        {
+          return optionInt;
+        }
+      }
+      print("Please Enter valid option!");
+      continue;
+    }
+  }
 
   func start()
   {
@@ -281,14 +332,26 @@ class Game
     while(qno <= 9)
     {
       let currentQuestion = questions[qno-1];
-      print("Question \(qno) :")
-      print(currentQuestion.question);
-      print("\n");
-      print("Options 1 : \(currentQuestion.options[0]) \t Options 2 : \(currentQuestion.options[1]) \n");
-      print("Options 3 : \(currentQuestion.options[2]) \t Options 4 : \(currentQuestion.options[3]) \n");
+      let option = getOptionForTheQuestion(question:currentQuestion,qno:qno);
+      print(option);
+      if(currentQuestion.answer == currentQuestion.options[option-1])
+      {
+        self.user.prize = self.gamePrize.getPrize(qno:qno);
+        print("Currect Answer !!!!!!!!!!");
+        let totalAmountEarned = self.user.prize.getEarnedAmount();
+        print("You have earned Total Amount : \(totalAmountEarned)");
+      }
+      else{
+        print("Wrong Answer !!!!!!!!!!");
+        if let corerctOption = currentQuestion.options.firstIndex(of:currentQuestion.answer)
+        {
+          print("Correct answer : option \(corerctOption+1) : \(currentQuestion.answer)")
+        }
 
-      
-
+        let totalAmountEarned = self.user.prize.getIncorrectWinningAmount();
+        print("You have earned Total Amount : \(totalAmountEarned)");
+        break;
+      }
       qno += 1;
     }
   }
@@ -296,13 +359,10 @@ class Game
 };
 
 
-
 func main()
 {
-
   let myGame = Game();
   myGame.start();
-
 }
 
 main()
