@@ -244,13 +244,20 @@ class Game
   var user:User;
   let gamePrize:GamePrize;
 
-  func use50_50(question:Question)
+  func useAudiencePoll(question:Question) -> Int
+  {
+    //TODO
+    self.isAudienceUsed = true;
+    return -1;
+  }
+
+  func use50_50(question:Question) -> Int
   {
     var incorrectOptions:Array<Int> = [];
     while(true)
     {
       let r = Int.random(in: 0..<4);
-      if(question.options[r] == question.answer)
+      if(question.options[r] == question.answer || incorrectOptions.contains(r))
       {
         continue;
       }
@@ -262,7 +269,35 @@ class Game
     }
 
     //TODO Print options
+    let option1:String = incorrectOptions.contains(0) ? "Options 1 : -- " : "Options 1 : \(question.options[0])"
+    let option2:String = incorrectOptions.contains(1) ? "Options 2 : -- " : "Options 2 : \(question.options[1])"
+    let option3:String = incorrectOptions.contains(2) ? "Options 3 : -- " : "Options 3 : \(question.options[2])"
+    let option4:String = incorrectOptions.contains(3) ? "Options 4 : -- " : "Options 4 : \(question.options[3])"
 
+    let line1:String = option1 + "\t" + option2;
+    let line2:String = option3 + "\t" + option4;
+
+    
+    while(true)
+    {
+      print(line1);
+      print(line2);
+
+      let option = readLine();
+      if let optionInt = Int(option!)
+      {
+        if(optionInt <= 4 && optionInt >= 1)
+        {
+          self.is50_50Used = true;
+          return optionInt;
+        }
+      }
+      else{
+        print("Please enter valid option");
+        continue;
+      }
+    }
+    
   }
 
   init(){
@@ -305,21 +340,84 @@ class Game
     {
       print("Question \(qno) :")
       print(question.question);
-      print("\n");
+      print("Please enter h for hint!\n");
       print("Options 1 : \(question.options[0]) \t Options 2 : \(question.options[1]) \n");
       print("Options 3 : \(question.options[2]) \t Options 4 : \(question.options[3]) \n");
 
-      let option = readLine()!;
+      let option = readLine();
 
-      if let optionInt = Int(option)
+      if let optionInt = Int(option!)
       {
         if(optionInt <= 4 && optionInt >= 1)
         {
           return optionInt;
         }
       }
+      if let optionH = option
+      {
+        if(optionH == "h" || optionH == "H")
+        {
+          let h = useHint(question:question);
+          if (h == -1 )
+          {
+            print("You have used all HINTS");
+            continue;
+          }
+          return h;
+        }
+      }
       print("Please Enter valid option!");
       continue;
+    }
+  }
+
+  func getHintMenuOption() -> Int
+  {
+    while(true)
+    {
+      print("Please choose One Hint")
+      print("1 . 50-50")
+      print("2 . Audience")
+
+      let option = readLine();
+      if let optionInt = Int(option!)
+      {
+        if(optionInt <= 2 && optionInt >= 1)
+        {
+          return optionInt;
+        }
+      }
+      print("Please Enter valid option!");
+      continue;
+    }
+  }
+
+  func useHint(question:Question) -> Int
+  {
+    if(!self.is50_50Used && !self.isAudienceUsed)
+    {
+      let hintOption = getHintMenuOption();
+      if(hintOption == 1)
+      {
+        return use50_50(question:question);
+      }
+      else{
+        return useAudiencePoll(question:question);
+      }
+    }
+    else
+    {
+      if (self.is50_50Used)
+      {
+        return useAudiencePoll(question:question);
+      }
+      else if (self.isAudienceUsed)
+      {
+        return use50_50(question:question);        
+      }
+      else{
+        return -1;
+      }
     }
   }
 
