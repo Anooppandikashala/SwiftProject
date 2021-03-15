@@ -166,14 +166,17 @@ class QuestionBank
 struct Prize{
   var amountEarned:Int;
   var incorrectWinningAmount:Int;
+  var walkAwayAmount:Int;
   init(){
     self.amountEarned = 0;
     self.incorrectWinningAmount = 0;
+    self.walkAwayAmount = 0;
   }
 
-  init(a:Int,b:Int){
+  init(a:Int,b:Int,c:Int){
     self.amountEarned = a;
     self.incorrectWinningAmount = b;
+    self.walkAwayAmount = c;
   }
 
   func getEarnedAmount() -> Int{
@@ -182,6 +185,10 @@ struct Prize{
 
   func getIncorrectWinningAmount() -> Int{
     return self.incorrectWinningAmount;
+  }
+
+  func getWalkAwayAmount() -> Int{
+    return self.walkAwayAmount;
   }
 
 }
@@ -206,15 +213,17 @@ class GamePrize
   init(){
     let customKeys:Array<Int> = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     let customValues:Array<Prize> = 
-    [ Prize(a:1000,b:0),
-      Prize(a:5000,b:0),
-      Prize(a:10000,b:0),
-      Prize(a:25000,b:10000),
-      Prize(a:50000,b:10000),
-      Prize(a:100000,b:10000),
-      Prize(a:250000,b:100000),
-      Prize(a:500000,b:100000),
-      Prize(a:1000000,b:100000)
+    [ Prize(a:1000,b:0,c:0),
+      Prize(a:5000,b:0,c:0),
+      Prize(a:10000,b:0,c:10000),
+
+      Prize(a:25000,b:10000,c:10000),
+      Prize(a:50000,b:10000,c:10000),
+      Prize(a:100000,b:10000,c:100000),
+
+      Prize(a:250000,b:100000,c:250000),
+      Prize(a:500000,b:100000,c:500000),
+      Prize(a:1000000,b:100000,c:1000000)
     ]
 
     self.gamePrizes = Dictionary(uniqueKeysWithValues: zip(customKeys,customValues))
@@ -225,7 +234,7 @@ class GamePrize
     {
       return prize;
     }
-    return Prize(a:0,b:0);
+    return Prize(a:0,b:0,c:0);
   }
 
 }
@@ -385,11 +394,32 @@ class Game
   {
     while(true)
     {
-      print("Question \(qno) :")
+      print("Game Round : \(getRound(qno:qno))");
+      print("Question : \(qno)/9");
       print(question.question);
-      print("Please enter h for hint!\n");
+      if(qno >= 1 && qno < 7)
+      {
+        print("Please enter h for hint!\n");
+      }
       print("Options 1 : \(question.options[0]) \t Options 2 : \(question.options[1]) \n");
       print("Options 3 : \(question.options[2]) \t Options 4 : \(question.options[3]) \n");
+
+      if(qno == 4 || qno > 6)
+      {
+        print("Do you want to walk away? (y/n)");
+        print("You will win $\(self.user.prize.getWalkAwayAmount())")
+        let option = readLine();
+
+        if let optionStr = option
+        {
+          print("Walk away \(optionStr)");
+          if(optionStr == "y" || optionStr == "Y"){
+            return -2;
+          }
+          print("Choose Options :");
+        }
+
+      }
 
       let option = readLine();
 
@@ -400,17 +430,20 @@ class Game
           return optionInt;
         }
       }
-      if let optionH = option
+      if(qno >= 1 && qno < 7)
       {
-        if(optionH == "h" || optionH == "H")
+        if let optionH = option
         {
-          let h = useHint(question:question);
-          if (h == -1 )
+          if(optionH == "h" || optionH == "H")
           {
-            print("You have used all HINTS");
-            continue;
+            let h = useHint(question:question);
+            if (h == -1 )
+            {
+              print("You have used all HINTS");
+              continue;
+            }
+            return h;
           }
-          return h;
         }
       }
       print("Please Enter valid option!");
@@ -468,6 +501,22 @@ class Game
     }
   }
 
+  func getRound(qno:Int) -> Int
+  {
+    if( qno >= 1 && qno <= 3)
+    {
+      return 1;
+    }
+    else if( qno >= 4 && qno <= 6)
+    {
+      return 2;
+    }
+    else
+    {
+      return 3;
+    }
+  }
+
   func start()
   {
     printGreeting();
@@ -478,13 +527,19 @@ class Game
     {
       let currentQuestion = questions[qno-1];
       let option = getOptionForTheQuestion(question:currentQuestion,qno:qno);
-      print(option);
+      if(option == -2)
+      {
+        let totalAmountEarned = self.user.prize.getWalkAwayAmount();
+        print("You have walk away from the Game!")
+        print("You have earned Total Amount : $\(totalAmountEarned)");
+        break;
+      }
       if(currentQuestion.answer == currentQuestion.options[option-1])
       {
         self.user.prize = self.gamePrize.getPrize(qno:qno);
         print("Correct Answer !!!!!!!!!!");
         let totalAmountEarned = self.user.prize.getEarnedAmount();
-        print("You have earned Total Amount : \(totalAmountEarned)");
+        print("You have earned Total Amount : $\(totalAmountEarned)");        
       }
       else{
         print("Wrong Answer !!!!!!!!!!");
@@ -494,7 +549,8 @@ class Game
         }
 
         let totalAmountEarned = self.user.prize.getIncorrectWinningAmount();
-        print("You have earned Total Amount : \(totalAmountEarned)");
+        print("You have reached question \(qno)!")
+        print("You have earned Total Amount : $\(totalAmountEarned)");
         break;
       }
       qno += 1;
