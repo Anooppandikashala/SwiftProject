@@ -11,7 +11,6 @@ struct Question
     self.answer = answer;
     self.options = options;
   }
-
 }
 
 class QuestionBank
@@ -93,9 +92,7 @@ class QuestionBank
     answer = "february";
     options = ["january","december","february","march"];
     let q5 = Question(question:question,answer:answer,options:options);
-    easyQuestions.append(q5);
-
-    
+    easyQuestions.append(q5);    
   }
 
   func initializeMediumQuestions()
@@ -129,7 +126,6 @@ class QuestionBank
     options = ["january","december","february","march"];
     let q5 = Question(question:question,answer:answer,options:options);
     mediumQuestions.append(q5);
-
   }
 
   func initializeHardQuestions()
@@ -163,7 +159,6 @@ class QuestionBank
     options = ["january","december","february","march"];
     let q5 = Question(question:question,answer:answer,options:options);
     hardQuestions.append(q5);
-
   }
 
 };
@@ -244,11 +239,64 @@ class Game
   var user:User;
   let gamePrize:GamePrize;
 
+  func getAudiencePolling(question:Question) -> Dictionary<Int,Int>
+  {
+    var answerPolling:[Int : Int]=[:];
+    if let correctOption = question.options.firstIndex(of:question.answer)
+    {
+      answerPolling[correctOption+1] = 75;
+
+      var remainingPercent = 25;
+
+      for i in 1...4
+      {
+        if(correctOption+1 == i)
+        {
+          continue;
+        }
+        if(answerPolling.count == 3)
+        {
+          answerPolling[i] = remainingPercent;
+          break;
+        }
+        let percent = Int.random(in:8...12);
+        answerPolling[i] = percent;
+        remainingPercent = remainingPercent - percent;        
+      }
+      return answerPolling;
+    }
+    print("No answer found!");
+    return [:];
+  }
+
   func useAudiencePoll(question:Question) -> Int
   {
     //TODO
-    self.isAudienceUsed = true;
-    return -1;
+    let pollStatus = getAudiencePolling(question:question);
+    while(true)
+    {
+      print("Audience Poll Status :")
+      for i in 1...4
+      {
+        if let percent = pollStatus[i] {
+          print("Option \(i) : \(percent)%");
+        }
+      }
+
+      let option = readLine();
+      if let optionInt = Int(option!)
+      {
+        if(optionInt <= 4 && optionInt >= 1)
+        {
+          self.isAudienceUsed = true;
+          return optionInt;
+        }
+      }
+      else{
+        print("Please enter valid option");
+        continue;
+      }
+    }
   }
 
   func use50_50(question:Question) -> Int
@@ -256,7 +304,7 @@ class Game
     var incorrectOptions:Array<Int> = [];
     while(true)
     {
-      let r = Int.random(in: 0..<4);
+      let r = Int.random(in: 0..<4);//0,1,2,3
       if(question.options[r] == question.answer || incorrectOptions.contains(r))
       {
         continue;
@@ -267,8 +315,7 @@ class Game
         break;
       }
     }
-
-    //TODO Print options
+    
     let option1:String = incorrectOptions.contains(0) ? "Options 1 : -- " : "Options 1 : \(question.options[0])"
     let option2:String = incorrectOptions.contains(1) ? "Options 2 : -- " : "Options 2 : \(question.options[1])"
     let option3:String = incorrectOptions.contains(2) ? "Options 3 : -- " : "Options 3 : \(question.options[2])"
@@ -407,13 +454,13 @@ class Game
     }
     else
     {
-      if (self.is50_50Used)
+      if (!self.is50_50Used)
+      {
+        return use50_50(question:question);
+      }
+      else if (!self.isAudienceUsed)
       {
         return useAudiencePoll(question:question);
-      }
-      else if (self.isAudienceUsed)
-      {
-        return use50_50(question:question);        
       }
       else{
         return -1;
@@ -435,7 +482,7 @@ class Game
       if(currentQuestion.answer == currentQuestion.options[option-1])
       {
         self.user.prize = self.gamePrize.getPrize(qno:qno);
-        print("Currect Answer !!!!!!!!!!");
+        print("Correct Answer !!!!!!!!!!");
         let totalAmountEarned = self.user.prize.getEarnedAmount();
         print("You have earned Total Amount : \(totalAmountEarned)");
       }
