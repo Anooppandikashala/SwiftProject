@@ -13,6 +13,16 @@ struct Question
   }
 }
 
+enum Option
+{
+  case WALK_AWAY
+  case ONE
+  case TWO
+  case THREE
+  case FOUR
+  case NONE
+}
+
 enum Difficulty {
   case easy
   case medium
@@ -25,10 +35,7 @@ class QuestionBank
   var mediumQuestions:Array<Question>=[];
   var hardQuestions:Array<Question>=[];
 
-  func initializeQuestions()
-  {
-
-  }
+  func initializeQuestions(){}
 
   func getQuestions(difficulty:Difficulty) -> Array<Question>
   {
@@ -271,7 +278,6 @@ class GamePrize
 
 }
 
-
 class Game
 {
   var questions:Array<Question>;
@@ -279,6 +285,42 @@ class Game
   var isAudienceUsed:Bool = false;
   var user:User;
   let gamePrize:GamePrize;
+
+  func getQuestionOption(option:Option) -> Int
+  {
+    switch option 
+    {
+      case .ONE:
+        return 1;
+      case .TWO:
+        return 2;
+      case .THREE:
+        return 3;
+      case .FOUR:
+        return 4;
+      default :
+        return -1;
+    }
+  }
+
+  func getQuestionOption(option:Int) -> Option
+  {
+    switch option 
+    {
+      case 1:
+        return Option.ONE
+      case 2:
+        return Option.TWO
+      case 3:
+        return Option.THREE
+      case 4:
+        return Option.FOUR
+      default:
+        return Option.NONE
+    }
+
+  }
+
 
   func getAudiencePolling(question:Question) -> Dictionary<Int,Int>
   {
@@ -310,7 +352,7 @@ class Game
     return [:];
   }
 
-  func useAudiencePoll(question:Question) -> Int
+  func useAudiencePoll(question:Question) -> Option
   {
     //TODO
     let pollStatus = getAudiencePolling(question:question);
@@ -330,7 +372,7 @@ class Game
         if(optionInt <= 4 && optionInt >= 1)
         {
           self.isAudienceUsed = true;
-          return optionInt;
+          return getQuestionOption(option:optionInt);
         }
       }
       else{
@@ -340,7 +382,7 @@ class Game
     }
   }
 
-  func use50_50(question:Question) -> Int
+  func use50_50(question:Question) -> Option
   {
     var incorrectOptions:Array<Int> = [];
     while(true)
@@ -377,7 +419,7 @@ class Game
         if(optionInt <= 4 && optionInt >= 1)
         {
           self.is50_50Used = true;
-          return optionInt;
+          return getQuestionOption(option:optionInt);
         }
       }
       else{
@@ -392,16 +434,7 @@ class Game
     questions=[]
     self.gamePrize = GamePrize();
     var temp:Array<Question> = [];
-    /*let qBank = QuestionBank();
-    var q = qBank.getQuestions(difficulty:Difficulty.easy);
-    temp.append(contentsOf:q);
-    q = qBank.getQuestions(difficulty:Difficulty.medium);
-    temp.append(contentsOf:q);
-    q = qBank.getQuestions(difficulty:Difficulty.hard);
-    temp.append(contentsOf:q);
-    questions.append(contentsOf:temp)
-    */
-
+    
     let easyQBank = EasyQuestionBank();
     easyQBank.initializeQuestions();
     let q1 = easyQBank.getQuestions();
@@ -440,7 +473,7 @@ class Game
     print("Welcome to Who Wants To Be A Millionaire?");
   }
 
-  func getOptionForTheQuestion(question:Question,qno:Int) -> Int
+  func getOptionForTheQuestion(question:Question,qno:Int) -> Option
   {
     var isSureUsed:Bool = false;
     while(true)
@@ -465,7 +498,7 @@ class Game
         {
           print("Walk away \(optionStr)");
           if(optionStr == "y" || optionStr == "Y"){
-            return -2;
+            return Option.WALK_AWAY;
           }
           print("Choose Options :");
         }
@@ -479,7 +512,7 @@ class Game
         { 
           if(isSureUsed)
           {
-            return optionInt;
+            return getQuestionOption(option:optionInt);
           }
           print("You have selected \(optionInt) Are you sure? (y/n)");
           let optionSure = readLine();
@@ -487,7 +520,7 @@ class Game
           {
             if(optionS == "y" || optionS == "Y")
             {
-              return optionInt;
+              return getQuestionOption(option:optionInt);
             }
             else
             {
@@ -504,7 +537,7 @@ class Game
           if(optionH == "h" || optionH == "H")
           {
             let h = useHint(question:question);
-            if (h == -1 )
+            if (h == Option.NONE )
             {
               print("You have used all HINTS");
               continue;
@@ -539,7 +572,7 @@ class Game
     }
   }
 
-  func useHint(question:Question) -> Int
+  func useHint(question:Question) -> Option
   {
     if(!self.is50_50Used && !self.isAudienceUsed)
     {
@@ -563,7 +596,7 @@ class Game
         return useAudiencePoll(question:question);
       }
       else{
-        return -1;
+        return Option.NONE;
       }
     }
   }
@@ -594,14 +627,14 @@ class Game
     {
       let currentQuestion = questions[qno-1];
       let option = getOptionForTheQuestion(question:currentQuestion,qno:qno);
-      if(option == -2)
+      if(option == Option.WALK_AWAY)
       {
         let totalAmountEarned = self.user.prize.getWalkAwayAmount();
         print("You have walk away from the Game!")
         print("You have earned Total Amount : $\(totalAmountEarned)");
         break;
       }
-      if(currentQuestion.answer == currentQuestion.options[option-1])
+      if(currentQuestion.answer == currentQuestion.options[getQuestionOption(option:option)-1])
       {
         self.user.prize = self.gamePrize.getPrize(qno:qno);
         print("Correct Answer !!!!!!!!!!");
