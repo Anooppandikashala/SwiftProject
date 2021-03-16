@@ -13,25 +13,29 @@ struct Question
   }
 }
 
+enum Difficulty {
+  case easy
+  case medium
+  case hard
+}
+
 class QuestionBank
 {
   var easyQuestions:Array<Question>=[];
   var mediumQuestions:Array<Question>=[];
   var hardQuestions:Array<Question>=[];
 
-  init(){
-    initializeEasyQuestions();
-    initializeMediumQuestions();
-    initializeHardQuestions();
+  func initializeQuestions()
+  {
+
   }
 
-  func getQuestions(difficulty:String) -> Array<Question>
+  func getQuestions(difficulty:Difficulty) -> Array<Question>
   {
     var temp:Array<Question>=[]
     var selectedIndexes:Array<Int>=[]
     for _ in 1...3
     {
-
       var randomInt:Int = 0;
       while(true)
       {
@@ -46,11 +50,11 @@ class QuestionBank
         }
       }
       
-      if(difficulty == "easy")
+      if(difficulty == Difficulty.easy)
       {
         temp.append(easyQuestions[randomInt])
       }
-      else if(difficulty == "medium")
+      else if(difficulty == Difficulty.medium)
       {
         temp.append(mediumQuestions[randomInt])
       }
@@ -62,106 +66,134 @@ class QuestionBank
     return temp;
   }
 
-  func initializeEasyQuestions()
+}
+
+class EasyQuestionBank : QuestionBank
+{
+  override func initializeQuestions()
   {
     var question = "How many days do we have in a week?";
     var answer = "7";
     var options:Array<String> = ["5","7","8","3"];
     let q1 = Question(question:question,answer:answer,options:options);
-    easyQuestions.append(q1);
+    super.easyQuestions.append(q1);
 
     question = "How many days are there in a year?";
     answer = "365";
     options = ["366","360","368","365"];
     let q2 = Question(question:question,answer:answer,options:options);
-    easyQuestions.append(q2);
+    super.easyQuestions.append(q2);
 
     question = "How many colors are there in a rainbow?";
     answer = "7";
     options = ["5","3","8","7"];
     let q3 = Question(question:question,answer:answer,options:options);
-    easyQuestions.append(q3);
+    super.easyQuestions.append(q3);
 
     question = "How many letters are there in the English alphabet?";
     answer = "26";
     options = ["28","25","26","22"];
     let q4 = Question(question:question,answer:answer,options:options);
-    easyQuestions.append(q4);
+    super.easyQuestions.append(q4);
 
     question = "Which month of the year has the least number of days?";
     answer = "february";
     options = ["january","december","february","march"];
     let q5 = Question(question:question,answer:answer,options:options);
-    easyQuestions.append(q5);    
+    super.easyQuestions.append(q5);    
   }
 
-  func initializeMediumQuestions()
+  func getQuestions() -> Array<Question>
+  {
+    return super.getQuestions(difficulty:Difficulty.easy);
+  }  
+
+}
+
+class MediumQuestionBank : QuestionBank
+{
+  
+  override func initializeQuestions()
   {
     var question = "How many days do we have in a week?";
     var answer = "7";
     var options:Array<String> = ["5","7","8","3"];
     let q1 = Question(question:question,answer:answer,options:options);
-    mediumQuestions.append(q1);
+    super.mediumQuestions.append(q1);
 
     question = "How many days are there in a year?";
     answer = "365";
     options = ["366","360","368","365"];
     let q2 = Question(question:question,answer:answer,options:options);
-    mediumQuestions.append(q2);
+    super.mediumQuestions.append(q2);
 
     question = "How many colors are there in a rainbow?";
     answer = "7";
     options = ["5","3","8","7"];
     let q3 = Question(question:question,answer:answer,options:options);
-    mediumQuestions.append(q3);
+    super.mediumQuestions.append(q3);
 
     question = "How many letters are there in the English alphabet?";
     answer = "26";
     options = ["28","25","26","22"];
     let q4 = Question(question:question,answer:answer,options:options);
-    mediumQuestions.append(q4);
+    super.mediumQuestions.append(q4);
 
     question = "Which month of the year has the least number of days?";
     answer = "february";
     options = ["january","december","february","march"];
     let q5 = Question(question:question,answer:answer,options:options);
-    mediumQuestions.append(q5);
+    super.mediumQuestions.append(q5);    
   }
 
-  func initializeHardQuestions()
+  func getQuestions() -> Array<Question>
+  {
+    return super.getQuestions(difficulty:Difficulty.medium);
+  }  
+
+}
+
+class HardQuestionBank : QuestionBank
+{
+  override func initializeQuestions()
   {
     var question = "How many days do we have in a week?";
     var answer = "7";
     var options:Array<String> = ["5","7","8","3"];
     let q1 = Question(question:question,answer:answer,options:options);
-    hardQuestions.append(q1);
+    super.hardQuestions.append(q1);
 
     question = "How many days are there in a year?";
     answer = "365";
     options = ["366","360","368","365"];
     let q2 = Question(question:question,answer:answer,options:options);
-    hardQuestions.append(q2);
+    super.hardQuestions.append(q2);
 
     question = "How many colors are there in a rainbow?";
     answer = "7";
     options = ["5","3","8","7"];
     let q3 = Question(question:question,answer:answer,options:options);
-    hardQuestions.append(q3);
+    super.hardQuestions.append(q3);
 
     question = "How many letters are there in the English alphabet?";
     answer = "26";
     options = ["28","25","26","22"];
     let q4 = Question(question:question,answer:answer,options:options);
-    hardQuestions.append(q4);
+    super.hardQuestions.append(q4);
 
     question = "Which month of the year has the least number of days?";
     answer = "february";
     options = ["january","december","february","march"];
     let q5 = Question(question:question,answer:answer,options:options);
-    hardQuestions.append(q5);
+    super.hardQuestions.append(q5);   
   }
 
-};
+  func getQuestions() -> Array<Question>
+  {
+    return super.getQuestions(difficulty:Difficulty.hard);
+  }
+
+}
 
 struct Prize{
   var amountEarned:Int;
@@ -360,13 +392,31 @@ class Game
     questions=[]
     self.gamePrize = GamePrize();
     var temp:Array<Question> = [];
-    let qBank = QuestionBank();
-    var q = qBank.getQuestions(difficulty:"easy");
+    /*let qBank = QuestionBank();
+    var q = qBank.getQuestions(difficulty:Difficulty.easy);
     temp.append(contentsOf:q);
-    q = qBank.getQuestions(difficulty:"medium");
+    q = qBank.getQuestions(difficulty:Difficulty.medium);
     temp.append(contentsOf:q);
-    q = qBank.getQuestions(difficulty:"hard");
+    q = qBank.getQuestions(difficulty:Difficulty.hard);
     temp.append(contentsOf:q);
+    questions.append(contentsOf:temp)
+    */
+
+    let easyQBank = EasyQuestionBank();
+    easyQBank.initializeQuestions();
+    let q1 = easyQBank.getQuestions();
+    temp.append(contentsOf:q1);
+
+    let mediumQBank = MediumQuestionBank();
+    mediumQBank.initializeQuestions();
+    let q2 = mediumQBank.getQuestions();
+    temp.append(contentsOf:q2);
+
+    let hardQBank = HardQuestionBank();
+    hardQBank.initializeQuestions();
+    let q3 = hardQBank.getQuestions();
+    temp.append(contentsOf:q3);
+
     questions.append(contentsOf:temp)
 
     self.user = User(name:"User");
@@ -392,6 +442,7 @@ class Game
 
   func getOptionForTheQuestion(question:Question,qno:Int) -> Int
   {
+    var isSureUsed:Bool = false;
     while(true)
     {
       print("Game Round : \(getRound(qno:qno))");
@@ -420,14 +471,30 @@ class Game
         }
 
       }
-
       let option = readLine();
 
       if let optionInt = Int(option!)
       {
         if(optionInt <= 4 && optionInt >= 1)
-        {
-          return optionInt;
+        { 
+          if(isSureUsed)
+          {
+            return optionInt;
+          }
+          print("You have selected \(optionInt) Are you sure? (y/n)");
+          let optionSure = readLine();
+          if let optionS = optionSure
+          {
+            if(optionS == "y" || optionS == "Y")
+            {
+              return optionInt;
+            }
+            else
+            {
+              isSureUsed = true;
+              continue;
+            }
+          }
         }
       }
       if(qno >= 1 && qno < 7)
@@ -558,7 +625,6 @@ class Game
   }
 
 };
-
 
 func main()
 {
